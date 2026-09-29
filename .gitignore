@@ -1,0 +1,22 @@
+# Large / generated / third-party (recreated by scripts/setup.sh)
+models/
+vendor/
+**/.venv/
+**/.tts-venv/
+NotchVoice/.build/
+NotchVoice/build/
+**/node_modules/
+**/snapshots/
+**/__pycache__/
+.DS_Store
+
+# Media: renders, recordings, audio (the source screen recording is private)
+*.mp4
+*.mov
+*.m4a
+*.wav
+*.mp3
+*.ogg
+*.jpg
+*.png
+**/.impeccable/

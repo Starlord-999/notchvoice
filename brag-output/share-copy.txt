@@ -1,0 +1,2 @@
+Introducing NotchVoice: say "Hey Notch" and the MacBook notch types into ChatGPT, opens apps, clicks the first link and reads your PDFs — no buttons, no cloud.
+Built with Laya-MLX, Whisper and OmniVoice, fully on-device on an 8 GB M2.

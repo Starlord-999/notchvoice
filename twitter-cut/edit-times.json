@@ -1,0 +1,23 @@
+{
+ "duration": 22.08,
+ "events": {
+  "hey": 0.17,
+  "panel_open": 0.7,
+  "debug_on": 1.04,
+  "debug_off": 3.09,
+  "open_chrome": 1.19,
+  "chrome_open": 4.01,
+  "search1": 4.75,
+  "search1_end": 8.15,
+  "results1": 8.95,
+  "search2": 11.08,
+  "search2_end": 13.16,
+  "results2": 14.32,
+  "first_link": 15.1,
+  "first_link_end": 15.9,
+  "article": 17.44,
+  "fs_say": 18.18,
+  "fs_say_end": 19.68,
+  "fullscreen": 20.68
+ }
+}

@@ -1,0 +1,18 @@
+{
+ "duration": 29.32,
+ "events": {
+  "hey": 0.32,
+  "open_chrome": 2.0,
+  "chrome_open": 5.7,
+  "search1": 6.5,
+  "results1": 12.22,
+  "search2": 13.0,
+  "results2": 17.71,
+  "first_link": 18.7,
+  "article": 21.46,
+  "fullscreen_say": 23.26,
+  "fullscreen": 25.76,
+  "panel_open": 1.4,
+  "panel_close": 4.5
+ }
+}

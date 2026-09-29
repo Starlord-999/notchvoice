@@ -1,0 +1,11 @@
+I control my Mac by talking to the notch.
+
+"Hey Notch" → it opens Chrome, searches Google, clicks the first link, goes full screen. No keyboard, no mouse.
+
+100% on-device on an 8 GB MacBook Air. No cloud.
+
+Link below ↓
+
+--- first reply ---
+NotchVoice → <your link>
+Built with Laya-MLX, Whisper and OmniVoice.

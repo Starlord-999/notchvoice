@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>NotchVoice — in action</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden; color: #fff; background: #000;
+        font-family: ui-rounded, system-ui, -apple-system, sans-serif;
+      }
+      .clip { position: absolute; inset: 0; }
+      .center { position: absolute; left: 0; right: 0; display: flex; justify-content: center; }
+
+      /* Intro / outro cards */
+      .notch-shape {
+        position: absolute; top: 0; left: 840px; width: 240px; height: 44px; background: #000;
+        border-radius: 0 0 14px 14px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+      .card-bg { position: absolute; inset: 0; background: radial-gradient(1200px 600px at 50% -10%, #1b1d24 0%, #0b0b0d 60%); }
+      #intro-title { top: 420px; font-size: 96px; font-weight: 800; letter-spacing: -0.03em; opacity: 0; }
+      #intro-sub { top: 560px; font-size: 36px; color: rgba(255, 255, 255, 0.62); opacity: 0; }
+      #outro-word { top: 390px; font-size: 128px; font-weight: 800; letter-spacing: -0.03em; opacity: 0; }
+      #outro-line { top: 560px; font-size: 46px; color: rgba(255, 255, 255, 0.85); opacity: 0; }
+      #outro-chips { position: absolute; top: 680px; left: 0; right: 0; display: flex; justify-content: center; gap: 18px; }
+      #outro-chips span {
+        font-size: 26px; padding: 12px 24px; border-radius: 999px; background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.85); opacity: 0;
+      }
+
+      /* Footage with camera moves */
+      #cam { position: absolute; inset: 0; transform-origin: 50% 0%; z-index: 0; }
+      #footage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #hide-debug { position: absolute; left: 662px; top: 174px; width: 220px; height: 24px; background: #000; inset: auto; left: 662px; top: 174px; }
+
+      /* Captions */
+      .said {
+        position: absolute; left: 0; right: 0; bottom: 70px; display: flex; justify-content: center; opacity: 0;
+      }
+      .said div {
+        display: flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 700; padding: 16px 32px;
+        border-radius: 999px; background: rgba(0, 0, 0, 0.78); border: 1px solid rgba(52, 199, 89, 0.55);
+      }
+      .said i { width: 16px; height: 16px; border-radius: 50%; background: #34c759; display: block; }
+      .vo {
+        position: absolute; left: 0; right: 0; bottom: 74px; display: flex; justify-content: center; opacity: 0;
+      }
+      .vo div {
+        font-size: 36px; font-weight: 600; padding: 12px 28px; border-radius: 16px;
+        background: rgba(0, 0, 0, 0.62); color: rgba(255, 255, 255, 0.95);
+      }
+      .said, .vo, #intro, #outro { z-index: 5; }
+      .said.clip, .vo.clip { top: auto; bottom: 70px; height: auto; align-items: center; }
+      #live-tag {
+        position: absolute; top: 70px; right: 60px; font-size: 22px; font-weight: 700; padding: 8px 18px; border-radius: 999px;
+        background: rgba(0, 0, 0, 0.7); color: rgba(255, 255, 255, 0.85); opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="36.8">
+      <!-- Intro -->
+      <section id="intro" class="clip" data-start="0" data-duration="4.2" data-track-index="1">
+        <div class="card-bg"></div>
+        <div class="notch-shape"></div>
+        <div id="intro-title" class="center">This is NotchVoice.</div>
+        <div id="intro-sub" class="center">Real screen recording · 100% on-device · 8 GB M2</div>
+      </section>
+
+      <!-- Real footage (edited cut of the user's recording) -->
+      <div id="cam">
+        <video id="footage" src="assets/footage.mp4" data-start="4" data-duration="29.32" data-track-index="0" muted playsinline></video>
+        <div id="hide-debug" class="clip" data-start="6.25" data-duration="2.1" data-track-index="2"></div>
+      </div>
+
+      <!-- What the user said -->
+      <div id="said1" class="said clip" data-start="4.25" data-duration="1.7" data-track-index="4"><div><i></i>“Hey Notch”</div></div>
+      <div id="said2" class="said clip" data-start="6.0" data-duration="2.4" data-track-index="4"><div><i></i>“Open Chrome”</div></div>
+      <div id="said3" class="said clip" data-start="10.45" data-duration="3.45" data-track-index="4"><div><i></i>“Search for latest laptop in 2026”</div></div>
+      <div id="said4" class="said clip" data-start="16.95" data-duration="2.9" data-track-index="4"><div><i></i>“Search for MacBook M4 review”</div></div>
+      <div id="said5" class="said clip" data-start="22.65" data-duration="1.4" data-track-index="4"><div><i></i>“Click the first link”</div></div>
+      <div id="said6" class="said clip" data-start="27.2" data-duration="2.6" data-track-index="4"><div><i></i>“Make Chrome full screen”</div></div>
+
+      <!-- Voiceover subtitles (for muted viewing) -->
+      <div id="vos2" class="vo clip" data-start="13.95" data-duration="3.0" data-track-index="5"><div>It hears the command, runs the search, and hits enter.</div></div>
+      <div id="vos3" class="vo clip" data-start="19.9" data-duration="2.1" data-track-index="5"><div>No keyboard. No mouse.</div></div>
+      <div id="vos4" class="vo clip" data-start="24.2" data-duration="2.3" data-track-index="5"><div>It clicks links and buttons, in any app.</div></div>
+      <div id="vos5" class="vo clip" data-start="29.9" data-duration="3.3" data-track-index="5"><div>All of it runs on an 8 GB MacBook. No cloud.</div></div>
+
+      <!-- Outro -->
+      <section id="outro" class="clip" data-start="33.32" data-duration="3.48" data-track-index="1">
+        <div class="card-bg"></div>
+        <div class="notch-shape"></div>
+        <div id="outro-word" class="center">NotchVoice</div>
+        <div id="outro-line" class="center">Just say “Hey Notch”.</div>
+        <div id="outro-chips">
+          <span>Laya-MLX</span><span>Whisper</span><span>OmniVoice</span><span>No cloud</span>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="footage-audio" src="assets/footage-audio.m4a" data-start="4" data-duration="29.32" data-track-index="10" data-volume="1"></audio>
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="36.8" data-track-index="11" data-volume="0.35"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.32},{"t":3.8,"v":0.32},{"t":4.4,"v":0.12},{"t":33.0,"v":0.12},{"t":33.6,"v":0.35},{"t":35.6,"v":0.35},{"t":36.8,"v":0}]}]}'></audio>
+      <audio id="vo1" src="assets/vo/vo1.wav" data-start="0.25" data-duration="3.65" data-track-index="12" data-volume="1"></audio>
+      <audio id="vo2" src="assets/vo/vo2.wav" data-start="13.95" data-duration="3.01" data-track-index="12" data-volume="1"></audio>
+      <audio id="vo3" src="assets/vo/vo3.wav" data-start="19.9" data-duration="1.69" data-track-index="12" data-volume="1"></audio>
+      <audio id="vo4" src="assets/vo/vo4.wav" data-start="24.2" data-duration="2.15" data-track-index="12" data-volume="1"></audio>
+      <audio id="vo5" src="assets/vo/vo5.wav" data-start="29.9" data-duration="3.16" data-track-index="12" data-volume="1"></audio>
+      <audio id="vo6" src="assets/vo/vo6.wav" data-start="33.9" data-duration="2.2" data-track-index="12" data-volume="1"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Intro
+      tl.fromTo("#intro-title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.25);
+      tl.fromTo("#intro-sub", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.0);
+      tl.to(["#intro-title", "#intro-sub"], { opacity: 0, duration: 0.35 }, 3.75);
+
+      // Camera: zoom into the real notch panel while "Hey Notch" / "Open Chrome" happen, then back out
+      tl.fromTo("#cam", { scale: 1 }, { scale: 1.9, duration: 0.6, ease: "power2.inOut" }, 5.3);
+      tl.to("#cam", { scale: 1, duration: 0.6, ease: "power2.inOut" }, 9.0);
+      // Gentle push on the article after "click the first link", release before full screen
+      tl.to("#cam", { scale: 1.12, duration: 2.2, ease: "sine.inOut", transformOrigin: "50% 60%" }, 25.4);
+      tl.to("#cam", { scale: 1, duration: 0.5, ease: "power2.inOut" }, 28.3);
+
+      // Captions: pop in, fade out before each clip ends
+      const pop = (id, start, dur) => {
+        tl.fromTo(id, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.25, ease: "power3.out" }, start);
+        tl.to(id, { opacity: 0, duration: 0.2 }, start + dur - 0.25);
+      };
+      pop("#said1", 4.25, 1.7); pop("#said2", 6.0, 2.4); pop("#said3", 10.45, 3.45);
+      pop("#said4", 16.95, 2.9); pop("#said5", 22.65, 1.4); pop("#said6", 27.2, 2.6);
+      pop("#vos2", 13.95, 3.0); pop("#vos3", 19.9, 2.1); pop("#vos4", 24.2, 2.3); pop("#vos5", 29.9, 3.3);
+
+      // Outro
+      tl.fromTo("#outro-word", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 33.5);
+      tl.fromTo("#outro-line", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45 }, 34.0);
+      tl.fromTo("#outro-chips span", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.18 }, 34.5);
+      tl.to(["#outro-word", "#outro-line", "#outro-chips"], { opacity: 0, duration: 0.5 }, 36.2);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

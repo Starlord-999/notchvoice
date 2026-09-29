@@ -1,0 +1,2 @@
+Real footage, no hands: "Hey Notch" → it opens Chrome, runs the Google search, clicks the first link and goes full screen.
+NotchVoice runs 100% on-device on an 8 GB MacBook — Laya-MLX, Whisper and OmniVoice, no cloud.
