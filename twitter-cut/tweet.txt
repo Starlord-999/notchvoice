@@ -7,5 +7,5 @@ I control my Mac by talking to the notch.
 Link below ↓
 
 --- first reply ---
-NotchVoice → <your link>
+NotchVoice → https://github.com/Starlord-999/notchvoice
 Built with Laya-MLX, Whisper and OmniVoice.
