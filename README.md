@@ -57,4 +57,6 @@ Logs: `~/Library/Logs/NotchVoice.log`. Self-checks: `swift build && .build/debug
 
 ## License
 
-MIT. Third-party: NotchDrop (MIT, see `NotchVoice/LICENSE-NotchDrop`), Laya-MLX (Apache-2.0), VoiceStudio/OmniVoice (AGPL-3.0, used as a separate binary, not vendored in this repo).
+[AGPL-3.0](LICENSE) © 2026 Puneet Dugar. You can use, modify and redistribute NotchVoice, but any distributed or network-served modified version must also be released under AGPL-3.0 with its source.
+
+Third-party: NotchDrop (MIT, notice kept in `NotchVoice/LICENSE-NotchDrop`), Laya-MLX (Apache-2.0), VoiceStudio/OmniVoice (AGPL-3.0, built separately by `setup.sh`, not vendored), whisper.cpp (MIT). Model weights carry their own licenses.
