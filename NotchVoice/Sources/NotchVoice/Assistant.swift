@@ -12,6 +12,8 @@ final class Assistant: ObservableObject {
     @Published var hearing = false
     @Published var speaking = false
     @Published var thinking = false
+    @Published var live = ""  // Apple Speech partials while you talk
+    private let liveSpeech = LiveSpeech()
 
     private let audio = Audio()
     private var sentences: [String] = []
@@ -65,6 +67,16 @@ final class Assistant: ObservableObject {
         await Servers.shared.start()
         log("start: servers ready, starting mic")
         audio.onSpeechStart = { [weak self] in self?.speechStarted() }
+        LiveSpeech.authorize()
+        liveSpeech.onText = { [weak self] t in self?.live = t }
+        audio.onBuffer = { [liveSpeech] b in liveSpeech.feed(b) }
+        audio.onSpeechEnd = { [weak self] in
+            self?.liveSpeech.end()
+            Task { @MainActor in  // short blips never reach Whisper, so clear the preview ourselves
+                try? await Task.sleep(for: .seconds(2))
+                if self?.hearing == false, self?.thinking == false { self?.live = "" }
+            }
+        }
         audio.onSegment = { [weak self] wav in Task { await self?.handle(wav) } }
         do {
             try audio.start()
@@ -88,7 +100,7 @@ final class Assistant: ObservableObject {
     private func autoClose() {
         let active = Date() < sessionUntil || dictating
         if active != inSession { inSession = active }
-        guard let vm, vm.status == .opened, vm.openReason == .voice, !speaking, !thinking,
+        guard let vm, vm.status == .opened, vm.openReason == .voice, !typeLocked, !commandLocked, !speaking, !thinking,
               Date().timeIntervalSince(lastActive) > 20 else { return }
         vm.notchClose()
     }
@@ -97,6 +109,9 @@ final class Assistant: ObservableObject {
 
     private func speechStarted() {
         hearing = true
+        live = ""
+        liveSpeech.begin()
+        if inSession, vm?.status != .opened { vm?.notchOpen(.voice) }  // show the live text
         log("speech start")
         if speaking { audio.volume = 0.25 }  // duck; decide after we know what was said
     }
@@ -106,6 +121,7 @@ final class Assistant: ObservableObject {
         defer { if speaking { audio.volume = 1 } }
         let raw = (try? await Local.transcribe(wav)) ?? ""
         log("heard \(wav.count) bytes: \(raw)")
+        live = ""
         guard !Words.isJunk(raw) else { return }
         let n = Words.normalize(raw)
         let open = vm?.status == .opened
@@ -116,7 +132,7 @@ final class Assistant: ObservableObject {
             stopSpeaking()
             return
         }
-        let wake = Words.afterWake(n)
+        let wake = typeLocked ? nil : Words.afterWake(n)
         if let p = pending, wake == nil, Date().timeIntervalSince(p.at) < 8 {
             pending = nil
             heard = raw
@@ -133,7 +149,7 @@ final class Assistant: ObservableObject {
             extendSession()
             heard = raw
             if rest.isEmpty { say("Yes?"); return }
-        } else if !inSession || Settings.requireWake {
+        } else if !inSession || (Settings.requireWake && !commandLocked && !typeLocked) {
             return  // not addressed and no session: background talk
         }
         heard = raw
@@ -180,11 +196,36 @@ final class Assistant: ObservableObject {
     @Published var inSession = false
     private var typedInDictation = false
 
-    private func extendSession() { sessionUntil = Date().addingTimeInterval(30) }
+    private func extendSession() { sessionUntil = commandLocked ? .distantFuture : Date().addingTimeInterval(30) }
+
+    /// Two buttons / hotkeys: Type (everything is typed, no wake word) and Command (everything is a command).
+    @Published var typeLocked = false
+    @Published var commandLocked = false
+
+    func toggleType() {
+        typeLocked.toggle()
+        commandLocked = false
+        dictating = typeLocked
+        typedInDictation = false
+        sessionUntil = typeLocked ? .distantFuture : .distantPast
+        status = typeLocked ? "Typing — speak, press again to stop" : "Stopped typing"
+        if typeLocked, vm?.status != .opened { vm?.notchOpen(.voice) }
+    }
+
+    func toggleCommand() {
+        commandLocked.toggle()
+        typeLocked = false
+        dictating = false
+        sessionUntil = commandLocked ? .distantFuture : .distantPast
+        status = commandLocked ? "Command mode — speak a command" : "Command mode off"
+        if commandLocked, vm?.status != .opened { vm?.notchOpen(.voice) }
+    }
 
     private func endSession() {
         sessionUntil = .distantPast
         dictating = false
+        typeLocked = false
+        commandLocked = false
         vm?.notchClose()
     }
 
@@ -193,6 +234,7 @@ final class Assistant: ObservableObject {
         extendSession()
         if Words.stopDictation.contains(n) {
             dictating = false
+            typeLocked = false
             status = "Stopped typing"
             log("dictation off")
             return
@@ -239,6 +281,8 @@ final class Assistant: ObservableObject {
     private func structured(_ raw: String, _ command: String) async -> Bool {
         let closePanel = { if self.vm?.openReason == .voice { self.vm?.notchClose() } }
         let noAccess = { self.say("I need Accessibility permission for that.") }
+
+        if let s = VoiceExtras.handle(command) { status = s; return true }
 
         if Words.startDictation.contains(command) {
             dictating = true

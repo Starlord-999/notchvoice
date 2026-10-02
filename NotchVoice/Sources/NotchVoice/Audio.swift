@@ -5,6 +5,8 @@ import AVFoundation
 final class Audio {
     var onSpeechStart: () -> Void = {}
     var onSegment: (Data) -> Void = { _ in }
+    var onSpeechEnd: () -> Void = {}
+    var onBuffer: (AVAudioPCMBuffer) -> Void = { _ in }  // audio thread, only while speech is active
 
     // Calibration knobs — real rooms differ.
     // ponytail: energy VAD with adaptive noise floor; swap for Silero / whisper VAD if noisy rooms false-trigger.
@@ -89,15 +91,18 @@ final class Audio {
             segment = recent.map(\.0).reduce(Data(), +)
             speechSec = dur; silenceSec = 0; totalSec = dur
             recent.removeAll()
+            onBuffer(buf)
             DispatchQueue.main.async { self.onSpeechStart() }
             return
         }
 
+        onBuffer(buf)
         segment.append(pcm)
         totalSec += dur
         if loud { speechSec += dur; silenceSec = 0 } else { silenceSec += dur }
         if silenceSec >= silenceToEnd || totalSec >= maxSegment {
             inSpeech = false
+            DispatchQueue.main.async { self.onSpeechEnd() }
             if speechSec >= minSpeech {
                 let wav = Audio.wav(segment)
                 DispatchQueue.main.async { self.onSegment(wav) }

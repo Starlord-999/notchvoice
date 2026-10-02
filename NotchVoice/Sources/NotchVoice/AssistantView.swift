@@ -21,16 +21,29 @@ struct AssistantView: View {
                         .frame(maxWidth: 260, alignment: .trailing)
                 }
             }
-            Text(assistant.heard.isEmpty ? "Drop a file here, or say “Hey Notch…”" : "“\(assistant.heard)”")
+            Text(!assistant.live.isEmpty ? assistant.live : assistant.heard.isEmpty ? "Press Type or Command, or say “Hey Notch…”" : "“\(assistant.heard)”")
                 .font(.system(.title3, design: .rounded))
-                .foregroundStyle(assistant.heard.isEmpty ? .secondary : .primary)
-                .lineLimit(2)
+                .foregroundStyle(assistant.live.isEmpty && assistant.heard.isEmpty ? .secondary : .primary)
+                .lineLimit(3)
             Spacer(minLength: 0)
-            Text(assistant.status)
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                modeButton("keyboard", "Type  ⌥Space", assistant.typeLocked, .green) { assistant.toggleType() }
+                modeButton("mic", "Command  ⌥⇧Space", assistant.commandLocked, .blue) { assistant.toggleCommand() }
+                Spacer()
+                Text(assistant.status)
+                    .font(.system(.caption, design: .rounded))
+                    .foregroundStyle(.secondary).lineLimit(1)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    func modeButton(_ icon: String, _ title: String, _ on: Bool, _ c: Color, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: icon).font(.system(.caption, design: .rounded).weight(.medium))
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(on ? c.opacity(0.85) : .white.opacity(0.12), in: Capsule())
+        }.buttonStyle(.plain)
     }
 
     var dotColor: Color {

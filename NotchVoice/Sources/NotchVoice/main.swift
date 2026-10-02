@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import Carbon.HIToolbox
 import ServiceManagement
 
 if let i = CommandLine.arguments.firstIndex(of: "--match") {  // debug: which installed apps would a phrase open?
@@ -37,12 +38,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = EventMonitors.shared
         rebuildWindow()
         buildMenu()
-        Task { @MainActor in await Assistant.shared.start() }
+        Task { @MainActor in
+            Clips.shared.start()
+            Today.shared.start()
+            Hotkeys.register(id: 1, key: kVK_Space, mods: optionKey) { MainActor.assumeIsolated { Assistant.shared.toggleType() } }
+            Hotkeys.register(id: 2, key: kVK_Space, mods: optionKey | shiftKey) { MainActor.assumeIsolated { Assistant.shared.toggleCommand() } }
+            await Assistant.shared.start()
+        }
     }
 
     /// `open -a NotchVoice file.pdf` or Finder "Open With".
     func application(_: NSApplication, open urls: [URL]) {
         guard let url = urls.first else { return }
+        if url.scheme == "notchvoice" { Task { @MainActor in Today.shared.handle(url) }; return }
         Task { @MainActor in Assistant.shared.load(url) }
     }
 
@@ -65,6 +73,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(toggle("Always require “Hey Notch”", #selector(toggleWake), Settings.requireWake))
         menu.addItem(toggle("Launch at Login", #selector(toggleLogin), SMAppService.mainApp.status == .enabled))
+        menu.addItem(withTitle: "Toggle Typing  (⌥Space)", action: #selector(menuType), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "Toggle Command mode  (⌥⇧Space)", action: #selector(menuCommand), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit", action: #selector(NSApp.terminate), keyEquivalent: "q")
         item.menu = menu
@@ -81,6 +91,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         m.state = on ? .on : .off
         return m
     }
+
+    @MainActor @objc func menuType() { Assistant.shared.toggleType() }
+    @MainActor @objc func menuCommand() { Assistant.shared.toggleCommand() }
 
     @objc func toggleWake(_ sender: NSMenuItem) {
         Settings.requireWake.toggle()

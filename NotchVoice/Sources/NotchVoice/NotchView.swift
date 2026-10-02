@@ -49,7 +49,7 @@ struct NotchView: View {
             Group {
                 if vm.status == .opened {
                     VStack(spacing: vm.spacing) {
-                        AssistantView(vm: vm, assistant: Assistant.shared)
+                        Dashboard(vm: vm)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .padding(vm.spacing)

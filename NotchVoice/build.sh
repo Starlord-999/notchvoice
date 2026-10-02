@@ -20,6 +20,10 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
   <key>CFBundleDocumentTypes</key><array><dict><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>Alternate</string><key>LSItemContentTypes</key><array><string>public.item</string></array></dict></array>
+  <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>NotchVoice</string><key>CFBundleURLSchemes</key><array><string>notchvoice</string></array></dict></array>
+  <key>NSSpeechRecognitionUsageDescription</key><string>Shows your words in the notch as you speak. Recognition runs on this Mac.</string>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>Shows your next meeting in the notch.</string>
+  <key>NSBluetoothAlwaysUsageDescription</key><string>Shows connected Bluetooth devices in the notch.</string>
   <key>NSMicrophoneUsageDescription</key><string>NotchVoice listens for “Hey Notch” and your commands. Audio never leaves this Mac.</string>
   <key>NSAppleEventsUsageDescription</key><string>NotchVoice reads the file you have selected in Finder when you ask it to.</string>
 </dict></plist>
