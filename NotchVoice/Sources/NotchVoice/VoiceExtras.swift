@@ -13,6 +13,11 @@ import AppKit
             if Assistant.shared.vm?.status != .opened { Assistant.shared.vm?.notchOpen(.voice) }
             return "Showing \(t.rawValue)"
         }
+        // "open youtube music" must not fuzzy-match Apple Music; use an installed YT Music app if there is one, else the website.
+        if let rest = Actions.rest(after: Actions.openVerbs, in: c), rest.hasPrefix("youtube music") || rest.hasPrefix("you tube music") {
+            if let app = Actions.apps["youtube music"] { Actions.open(app) } else { Browser.navigate(URL(string: "https://music.youtube.com")!) }
+            return "Opening YouTube Music"
+        }
         switch c {
         case "play music", "resume music", "pause music", "play pause": NowPlaying.shared.control("playpause"); return "Play/pause"
         case "next song", "next track", "skip song", "skip track": NowPlaying.shared.control("next track"); return "Next"
