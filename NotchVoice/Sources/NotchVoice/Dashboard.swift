@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Tab: String, CaseIterable {
-    case assistant, apps, music, today, clipboard, system
+    case assistant, apps, music, today, clipboard, system, claude
     var icon: String {
         switch self {
         case .assistant: "waveform"
@@ -10,6 +10,7 @@ enum Tab: String, CaseIterable {
         case .today: "calendar.badge.clock"
         case .clipboard: "doc.on.clipboard"
         case .system: "gauge.with.dots.needle.33percent"
+        case .claude: "sparkles"
         }
     }
 }
@@ -35,6 +36,7 @@ struct Dashboard: View {
                 case .today: TodayView()
                 case .clipboard: ClipboardView()
                 case .system: GlanceView()
+                case .claude: ClaudeUsageView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

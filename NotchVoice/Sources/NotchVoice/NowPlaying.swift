@@ -10,6 +10,7 @@ import SwiftUI
     @Published var art: NSImage?
     private var timer: Timer?
     private var artKey = ""
+    private var web = false
 
     private static let players = [("Spotify", "com.spotify.client"), ("Music", "com.apple.Music")]
 
@@ -20,7 +21,7 @@ import SwiftUI
 
     func stop() { timer?.invalidate(); timer = nil }
 
-    private func script(_ src: String) -> NSAppleEventDescriptor? { NSAppleScript(source: src)?.executeAndReturnError(nil) }
+    func script(_ src: String) -> NSAppleEventDescriptor? { NSAppleScript(source: src)?.executeAndReturnError(nil) }
 
     func poll() {
         let running = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
@@ -31,13 +32,17 @@ import SwiftUI
             let v = (1 ... 3).map { d.atIndex($0)?.stringValue ?? "" }
             if found == nil || v[2] == "true" { found = (name, v) }
         }
-        guard let (name, v) = found else { title = ""; artist = ""; playing = false; player = ""; art = nil; return }
+        if found?.1[2] != "true", let w = webPoll(running), w.1[2] == "true" || found == nil { found = w }
+        guard let (name, v) = found else { title = ""; artist = ""; playing = false; player = ""; art = nil; web = false; return }
+        web = Self.browsers.values.contains(name)
         player = name; title = v[0]; artist = v[1]; playing = v[2] == "true"
         let key = name + v[0] + v[1]
         guard key != artKey else { return }
         artKey = key
         art = nil
-        if name == "Spotify", let u = script("tell application \"Spotify\" to artwork url of current track")?.stringValue, let url = URL(string: u) {
+        if web, v.count > 3, let url = URL(string: v[3]) {
+            Task { if let (data, _) = try? await URLSession.shared.data(from: url), self.artKey == key { self.art = NSImage(data: data) } }
+        } else if name == "Spotify", let u = script("tell application \"Spotify\" to artwork url of current track")?.stringValue, let url = URL(string: u) {
             Task { if let (data, _) = try? await URLSession.shared.data(from: url), self.artKey == key { self.art = NSImage(data: data) } }
         } else if name == "Music", let data = script("tell application \"Music\" to data of artwork 1 of current track")?.data {
             art = NSImage(data: data)
@@ -47,6 +52,7 @@ import SwiftUI
     func control(_ cmd: String) {  // "playpause" | "next track" | "previous track"
         poll()
         guard !player.isEmpty else { return }
+        if web { webControl(cmd); poll(); return }
         _ = script("tell application \"\(player)\" to \(cmd)")
         poll()
     }
@@ -58,7 +64,7 @@ struct NowPlayingView: View {
     var body: some View {
         Group {
             if m.title.isEmpty {
-                Text("Nothing playing in Music or Spotify").foregroundStyle(.secondary)
+                Text("Nothing playing in Music, Spotify or a YouTube Music tab.\nBrowsers: allow JavaScript from Apple Events (Developer menu).").multilineTextAlignment(.center).font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 HStack(spacing: 14) {

@@ -7,7 +7,7 @@ import AppKit
 
     static func handle(_ c: String) -> String? {
         let tabs: [(String, Tab)] = [("apps", .apps), ("music", .music), ("calendar", .today), ("today", .today), ("timer", .today),
-                                     ("clipboard", .clipboard), ("system", .system), ("stats", .system), ("assistant", .assistant)]
+                                     ("clipboard", .clipboard), ("system", .system), ("stats", .system), ("claude", .claude), ("usage", .claude), ("tokens", .claude), ("assistant", .assistant)]
         if let rest = Actions.rest(after: ["show", "show me", "switch to"], in: c), let (_, t) = tabs.first(where: { rest.hasPrefix($0.0) }) {
             TabState.shared.tab = t
             if Assistant.shared.vm?.status != .opened { Assistant.shared.vm?.notchOpen(.voice) }
