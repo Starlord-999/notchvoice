@@ -100,7 +100,7 @@ final class Assistant: ObservableObject {
     private func autoClose() {
         let active = Date() < sessionUntil || dictating
         if active != inSession { inSession = active }
-        guard let vm, vm.status == .opened, vm.openReason == .voice, !typeLocked, !commandLocked, !speaking, !thinking,
+        guard let vm, vm.status == .opened, vm.openReason == .voice, mode == .off, !speaking, !thinking,
               Date().timeIntervalSince(lastActive) > 20 else { return }
         vm.notchClose()
     }
@@ -132,7 +132,7 @@ final class Assistant: ObservableObject {
             stopSpeaking()
             return
         }
-        let wake = typeLocked ? nil : Words.afterWake(n)
+        let wake = mode == .type ? nil : Words.afterWake(n)
         if let p = pending, wake == nil, Date().timeIntervalSince(p.at) < 8 {
             pending = nil
             heard = raw
@@ -149,7 +149,7 @@ final class Assistant: ObservableObject {
             extendSession()
             heard = raw
             if rest.isEmpty { say("Yes?"); return }
-        } else if !inSession || (Settings.requireWake && !commandLocked && !typeLocked) {
+        } else if !inSession || (Settings.requireWake && mode == .off) {
             return  // not addressed and no session: background talk
         }
         heard = raw
@@ -196,36 +196,26 @@ final class Assistant: ObservableObject {
     @Published var inSession = false
     private var typedInDictation = false
 
-    private func extendSession() { sessionUntil = commandLocked ? .distantFuture : Date().addingTimeInterval(30) }
+    private func extendSession() { sessionUntil = mode == .command ? .distantFuture : Date().addingTimeInterval(30) }
 
     /// Two buttons / hotkeys: Type (everything is typed, no wake word) and Command (everything is a command).
-    @Published var typeLocked = false
-    @Published var commandLocked = false
+    enum Mode { case off, type, command }
+    @Published var mode = Mode.off
 
-    func toggleType() {
-        typeLocked.toggle()
-        commandLocked = false
-        dictating = typeLocked
+    /// Pressing the active mode's button again turns it off.
+    func toggle(_ m: Mode) {
+        mode = mode == m ? .off : m
+        dictating = mode == .type
         typedInDictation = false
-        sessionUntil = typeLocked ? .distantFuture : .distantPast
-        status = typeLocked ? "Typing — speak, press again to stop" : "Stopped typing"
-        if typeLocked, vm?.status != .opened { vm?.notchOpen(.voice) }
-    }
-
-    func toggleCommand() {
-        commandLocked.toggle()
-        typeLocked = false
-        dictating = false
-        sessionUntil = commandLocked ? .distantFuture : .distantPast
-        status = commandLocked ? "Command mode — speak a command" : "Command mode off"
-        if commandLocked, vm?.status != .opened { vm?.notchOpen(.voice) }
+        sessionUntil = mode == .off ? .distantPast : .distantFuture
+        status = mode == .type ? "Typing — speak, press again to stop" : mode == .command ? "Command mode — speak a command" : "Mode off"
+        if mode != .off, vm?.status != .opened { vm?.notchOpen(.voice) }
     }
 
     private func endSession() {
         sessionUntil = .distantPast
         dictating = false
-        typeLocked = false
-        commandLocked = false
+        mode = .off
         vm?.notchClose()
     }
 
@@ -234,7 +224,7 @@ final class Assistant: ObservableObject {
         extendSession()
         if Words.stopDictation.contains(n) {
             dictating = false
-            typeLocked = false
+            mode = .off
             status = "Stopped typing"
             log("dictation off")
             return

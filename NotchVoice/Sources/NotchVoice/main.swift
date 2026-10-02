@@ -41,8 +41,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             Clips.shared.start()
             Today.shared.start()
-            Hotkeys.register(id: 1, key: kVK_Space, mods: optionKey) { MainActor.assumeIsolated { Assistant.shared.toggleType() } }
-            Hotkeys.register(id: 2, key: kVK_Space, mods: optionKey | shiftKey) { MainActor.assumeIsolated { Assistant.shared.toggleCommand() } }
+            Hotkeys.register(id: 1, key: kVK_Space, mods: optionKey) { MainActor.assumeIsolated { Assistant.shared.toggle(.type) } }
+            Hotkeys.register(id: 2, key: kVK_Space, mods: optionKey | shiftKey) { MainActor.assumeIsolated { Assistant.shared.toggle(.command) } }
             await Assistant.shared.start()
         }
     }
@@ -73,8 +73,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(toggle("Always require “Hey Notch”", #selector(toggleWake), Settings.requireWake))
         menu.addItem(toggle("Launch at Login", #selector(toggleLogin), SMAppService.mainApp.status == .enabled))
-        menu.addItem(withTitle: "Toggle Typing  (⌥Space)", action: #selector(menuType), keyEquivalent: "").target = self
-        menu.addItem(withTitle: "Toggle Command mode  (⌥⇧Space)", action: #selector(menuCommand), keyEquivalent: "").target = self
+        for (i, title) in ["Toggle Typing  (⌥Space)", "Toggle Command mode  (⌥⇧Space)"].enumerated() {
+            let m = menu.addItem(withTitle: title, action: #selector(menuMode), keyEquivalent: "")
+            m.target = self; m.tag = i
+        }
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit", action: #selector(NSApp.terminate), keyEquivalent: "q")
         item.menu = menu
@@ -92,8 +94,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return m
     }
 
-    @MainActor @objc func menuType() { Assistant.shared.toggleType() }
-    @MainActor @objc func menuCommand() { Assistant.shared.toggleCommand() }
+    @MainActor @objc func menuMode(_ s: NSMenuItem) { Assistant.shared.toggle(s.tag == 0 ? .type : .command) }
 
     @objc func toggleWake(_ sender: NSMenuItem) {
         Settings.requireWake.toggle()

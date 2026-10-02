@@ -27,8 +27,8 @@ struct AssistantView: View {
                 .lineLimit(3)
             Spacer(minLength: 0)
             HStack(spacing: 8) {
-                modeButton("keyboard", "Type  ⌥Space", assistant.typeLocked, .green) { assistant.toggleType() }
-                modeButton("mic", "Command  ⌥⇧Space", assistant.commandLocked, .blue) { assistant.toggleCommand() }
+                modeButton("keyboard", "Type  ⌥Space", assistant.mode == .type, .green) { assistant.toggle(.type) }
+                modeButton("mic", "Command  ⌥⇧Space", assistant.mode == .command, .blue) { assistant.toggle(.command) }
                 Spacer()
                 Text(assistant.status)
                     .font(.system(.caption, design: .rounded))
